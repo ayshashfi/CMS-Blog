@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from .models import Blog, Like, Comment
 
-# Define the CommentSerializer first
+
 class CommentSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source='user.first_name',read_only=True)  # Or 'user' if you want more user details
+    user = serializers.CharField(source='user.first_name',read_only=True)  
 
     class Meta:
         model = Comment
@@ -11,7 +11,7 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ['status', 'created_at','user']
 
 
-# Define the BlogSerializer after CommentSerializer
+
 class BlogSerializer(serializers.ModelSerializer):
     liked_by_user = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
@@ -22,8 +22,11 @@ class BlogSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'content', 'image', 'attachment', 'created_at', 'updated_at', 'liked_by_user', 'likes_count', 'comments']
 
     def get_liked_by_user(self, obj):
-        user = self.context['request'].user
-        return obj.likes.filter(user=user).exists()
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.likes.filter(user=request.user).exists()
+        return False  # Default to False for anonymous users
+
 
     def get_likes_count(self, obj):
         return obj.likes.count()

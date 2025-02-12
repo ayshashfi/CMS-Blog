@@ -4,8 +4,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from .serializers import UserSerializer  # Import the serializer here
+from .serializers import UserSerializer  
 from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
 
 
 # Custom Token Refresh View
@@ -99,7 +100,7 @@ class AdminLoginAPIView(APIView):
         }, status=status.HTTP_400_BAD_REQUEST)
     
 
-from rest_framework.permissions import IsAuthenticated
+
 
 class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../utils/AxiosInstance"; // Assuming axios instance is already set up
+import axiosInstance from "../utils/AxiosInstance";
 import { toast } from "sonner";
 
 const CreateBlog = () => {
@@ -14,7 +14,10 @@ const CreateBlog = () => {
   };
 
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+    }
   };
 
   const handleAttachmentsChange = (e) => {
@@ -27,9 +30,12 @@ const CreateBlog = () => {
     formData.append("title", blogData.title);
     formData.append("content", blogData.content);
     if (image) formData.append("image", image);
-    attachments.forEach((file, index) => {
-      formData.append(`attachments[${index}]`, file);
-    });
+
+    if (attachments.length > 0) {
+      attachments.forEach((file) => {
+        formData.append("attachment", file);
+      });
+    }
 
     try {
       await axiosInstance.post("blogs/blogs/", formData, {
@@ -46,7 +52,9 @@ const CreateBlog = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold text-center text-gray-800">Create Blog</h2>
+      <h2 className="text-2xl font-semibold text-center text-gray-800">
+        Create Blog
+      </h2>
       <form onSubmit={handleSubmit} className="space-y-4 mt-6">
         <div>
           <label className="block text-gray-600 font-medium">Title</label>
@@ -78,6 +86,16 @@ const CreateBlog = () => {
             onChange={handleImageChange}
             className="w-full border rounded-lg px-4 py-2 mt-2"
           />
+          {image && (
+            <div className="mt-2">
+              <p className="text-sm text-gray-500">Selected Image:</p>
+              <img
+                src={URL.createObjectURL(image)}
+                alt="Selected"
+                className="mt-2 w-32 h-32 object-cover rounded-lg shadow"
+              />
+            </div>
+          )}
         </div>
         <div>
           <label className="block text-gray-600 font-medium">Attachments</label>
@@ -87,6 +105,16 @@ const CreateBlog = () => {
             onChange={handleAttachmentsChange}
             className="w-full border rounded-lg px-4 py-2 mt-2"
           />
+          {attachments.length > 0 && (
+            <div className="mt-2">
+              <p className="text-sm text-gray-500">Selected Attachments:</p>
+              <ul className="list-disc pl-5 text-sm text-gray-700">
+                {attachments.map((file, index) => (
+                  <li key={index}>{file.name}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
         <div className="flex justify-end">
           <button

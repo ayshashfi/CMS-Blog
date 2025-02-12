@@ -1,39 +1,33 @@
-from rest_framework import generics, permissions
-from .models import Blog
+from rest_framework import generics, permissions, status
 from .serializers import BlogSerializer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Blog, Like, Comment
+from .serializers import BlogSerializer,  CommentSerializer
+
+
 
 # List and Create View
 class BlogListCreateView(generics.ListCreateAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 # Retrieve, Update, Delete View
 class BlogRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
-    permission_classes = [IsAuthenticated]
-  # Restrict to admin users
+    permission_classes = [IsAuthenticated] # Restrict to admin users
 
-
-# blogs/views.py
-from rest_framework import generics, status
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from .models import Blog, Like, Comment
-from .serializers import BlogSerializer, LikeSerializer, CommentSerializer
+  
 
 class BlogListView(generics.ListAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
+    permission_classes = [IsAuthenticated]
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from .models import Blog, Like
+
 
 class LikeUnlikeBlogView(APIView):
     permission_classes = [IsAuthenticated]
@@ -53,12 +47,7 @@ class LikeUnlikeBlogView(APIView):
             like.delete()
             return Response({'success': True, 'message': 'Blog unliked'}, status=status.HTTP_200_OK)
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from .models import Blog, Comment
-from .serializers import CommentSerializer
+
 
 class BlogCommentView(APIView):
     permission_classes = [IsAuthenticated]
@@ -91,14 +80,11 @@ class BlogCommentView(APIView):
         
 
 
-from rest_framework import generics, permissions
-from .models import Comment
-from .serializers import CommentSerializer
-
 class CommentListView(generics.ListCreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAdminUser]  # Only admins can list and create comments
+    
 
 class CommentUpdateView(generics.UpdateAPIView):
     queryset = Comment.objects.all()
@@ -111,12 +97,6 @@ class CommentUpdateView(generics.UpdateAPIView):
             serializer.save(approved=approved)
 
 
-# views.py
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Comment
-from .serializers import CommentSerializer
 
 class BlockCommentView(APIView):
     """

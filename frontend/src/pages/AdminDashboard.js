@@ -10,19 +10,29 @@ const AdminDashboard = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editImage, setEditImage] = useState(null);
+  const [editImagePreview, setEditImagePreview] = useState(null);
   const [editAttachment, setEditAttachment] = useState(null);
+  const [existingAttachment, setExistingAttachment] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem("access_token"); // Get token from storage
+    if (!token) {
+      toast.error("You need to log in first!");
+      navigate("/login"); // Redirect to login page
+      return;
+    }
     fetchBlogs();
   }, []);
 
   const fetchBlogs = async () => {
     try {
       const response = await axiosInstance.get("blogs/blogs/");
+      console.log("Fetched Blogs:", response.data); // Debugging
       setBlogs(response.data);
       setLoading(false);
     } catch (error) {
+      console.error("Fetch Error:", error);
       setLoading(false);
       toast.error("Failed to fetch blogs.");
     }
@@ -43,7 +53,9 @@ const AdminDashboard = () => {
     setEditTitle(blog.title);
     setEditContent(blog.content);
     setEditImage(null);
+    setEditImagePreview(blog.image);
     setEditAttachment(null);
+    setExistingAttachment(blog.attachment); // Ensure this is correctly set
   };
 
   const closeEditModal = () => {
@@ -51,7 +63,9 @@ const AdminDashboard = () => {
     setEditTitle("");
     setEditContent("");
     setEditImage(null);
+    setEditImagePreview(null);
     setEditAttachment(null);
+    setExistingAttachment(null);
   };
 
   const handleEditSubmit = async () => {
@@ -72,6 +86,7 @@ const AdminDashboard = () => {
       closeEditModal();
       fetchBlogs();
     } catch (error) {
+      console.error("Edit Error:", error);
       toast.error("Failed to update blog.");
     }
   };
@@ -138,6 +153,9 @@ const AdminDashboard = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-lg space-y-4 w-full max-w-2xl">
             <h3 className="text-xl font-semibold">Edit Blog</h3>
+            {editImagePreview && (
+              <img src={editImagePreview} alt="Preview" className="w-full h-40 object-cover rounded-lg" />
+            )}
             <input
               type="text"
               value={editTitle}
@@ -154,7 +172,10 @@ const AdminDashboard = () => {
             />
             <input
               type="file"
-              onChange={(e) => setEditImage(e.target.files[0])}
+              onChange={(e) => {
+                setEditImage(e.target.files[0]);
+                setEditImagePreview(URL.createObjectURL(e.target.files[0]));
+              }}
               className="w-full px-4 py-2 border rounded-lg"
             />
             <input
@@ -162,19 +183,23 @@ const AdminDashboard = () => {
               onChange={(e) => setEditAttachment(e.target.files[0])}
               className="w-full px-4 py-2 border rounded-lg"
             />
+            {existingAttachment && !editAttachment && (
+              <p className="text-gray-700">
+                Existing Attachment:{" "}
+                <a
+                  href={existingAttachment}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  View Attachment
+                </a>
+              </p>
+            )}
+            {editAttachment && <p className="text-gray-700">Selected Attachment: {editAttachment.name}</p>}
             <div className="flex justify-end space-x-4">
-              <button
-                onClick={closeEditModal}
-                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleEditSubmit}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Save Changes
-              </button>
+              <button onClick={closeEditModal} className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Cancel</button>
+              <button onClick={handleEditSubmit} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Changes</button>
             </div>
           </div>
         </div>

@@ -10,8 +10,9 @@ const Navbar = () => {
     e.preventDefault(); // Prevent default action
 
     // Clear local storage to remove tokens
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
+    localStorage.removeItem("token"); 
 
    
 
